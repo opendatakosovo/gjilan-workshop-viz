@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+</head>
+<body>
+<div id="map" style="height: 660px"></div>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script>
+    	$(document).ready(function(){
+    		initMap();
+    	})
+
+    	var markerArray = [];
+
+        var map = L.map('map').setView([42.551056983385934, 20.87127685546875], 9);
+
+        L.tileLayer('http://{s}.tiles.mapbox.com/v3/georges.jjc3k7b1/{z}/{x}/{y}.png', {
+            attribution: 'Data Source: <a href="http://opendatakosovo.org">Open Data Kosovo</a>',
+            maxZoom: 18
+        }).addTo(map);
+
+
+		function initMap(){
+            // Init map with markers for default year, months and measurement selection.
+            addMarkers();
+        }
+        
+        function addMarkers(){
+            markerArray = [];
+            var url = '/hartadata';
+
+            var popup = L.popup();
+
+            $.get(url, function(jsonResult){
+
+                for (var key in jsonResult){
+                    
+                    var vlera = jsonResult[key].vlera;
+                    var selia = jsonResult[key].selia;
+                    var emri = jsonResult[key].emri;
+
+                    var lon = jsonResult[key].gjatesia;
+                    var lat = jsonResult[key].gjeresia;
+                    if (lat != null){
+						displayValue = '€ ' + toCurrency(vlera);
+
+                        
+                        var popupContent = '<strong>' + emri + '</strong><br>' + displayValue;
+                    
+                        var circle = L.circle([lat, lon], 2900, {
+                            color: '#ff0000',
+                            fillColor: '#ff0000',
+                            fillOpacity: 0.9
+                        });
+                    }
+                    circle.bindPopup(popupContent);
+                    markerArray.push(circle);
+                }
+                markerLayerGroup = L.layerGroup(markerArray);
+                map.addLayer(markerLayerGroup);
+            })
+        }
+        function toCurrency(amount){
+	        var amount = parseFloat(Math.round(amount * 100) / 100).toFixed(2);
+	        return (amount + "").replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+    	}
+
+    </script>
+</body>
+</html>
